@@ -1,0 +1,266 @@
+﻿@page "/parser"
+@using Microsoft.AspNetCore.Http
+@using Microsoft.AspNetCore.Mvc
+@using DataJuggler.Blazor.FileUpload
+
+
+<div name="inputForm">
+    <div class="row">
+        <EditForm Model="people" OnSubmit="GetCharacters">
+            <label for="person1disp">Display Name Person 1</label>
+            <InputText @bind-Value="people[0].Display" name="person1disp"></InputText>
+            <label for="person1ingame">In Game Name Person 1</label>
+            <InputText @bind-Value="people[0].InGame" name="person1ingame"></InputText>
+            <label for="person1player">Is Person 1 your character?</label>
+            <InputCheckbox @bind-Value="people[0].IsPlayer" name="person1player"></InputCheckbox>
+            <br />
+            <label for="person2disp">Display Name Person 2</label>
+            <InputText @bind-Value="people[1].Display" name="person2disp"></InputText>
+            <label for="person2disp">In Game Name Person 2</label>
+            <InputText @bind-Value="people[1].InGame" name="person2disp"></InputText>
+            <label for="person2disp">Is Person 2 your character?</label>
+            <InputCheckbox @bind-Value="people[1].IsPlayer" name="person2disp"></InputCheckbox>
+            <br />
+            <!--
+    <label for="person3disp">Display Name Person 3</label>
+    <InputText @bind-Value="people[2].Display" name="person3disp"></InputText>
+    <label for="person3disp">In Game Name Person 3</label>
+    <InputText @bind-Value="people[2].InGame" name="person3disp"></InputText>
+    <label for="person3disp">Is Person 3 your character?</label>
+    <InputCheckbox @bind-Value="people[2].IsPlayer" name="person3disp"></InputCheckbox>
+    <br />
+    <label for="person4disp">Display Name Person 4</label>
+    <InputText @bind-Value="people[3].Display" name="person4disp"></InputText>
+    <label for="person4disp">In Game Name Person 4</label>
+    <InputText @bind-Value="people[3].InGame" name="person4disp"></InputText>
+    <label for="person4disp">Is Person 4 your character?</label>
+    <InputCheckbox @bind-Value="people[3].IsPlayer" name="person4disp"></InputCheckbox>
+        -->
+          </EditForm>
+        <div class="col-xl-6">
+            <textarea rows="20" cols="60">  
+                 @if (toBeWritten != null)
+                 {
+                     foreach (string line in toBeWritten)
+                        {
+                             <text>@line</text>
+                            <br />     
+                     }
+                 }
+             </textarea>
+        </div>
+    </div>
+</div>
+<div> <DataJuggler.Blazor.FileUpload.FileUpload OnChange="GetLines" AllowedExtensions=".txt" CustomExtensionMessage="Only .txt files are allowed."></DataJuggler.Blazor.FileUpload.FileUpload></div>
+
+
+<button type="button" @onclick="Parse">Parse File</button>
+<button type="button" @onclick="Download">Download</button>
+
+
+@code {
+
+    public List<string> toBeWritten;
+    public InputModel input;
+    public List<string> uploadLines;
+    public bool charNumberKnown;
+    public List<PersonModel> people;
+    public string uploadFile;
+    public IFormFile Upload;
+    public UploadFileModel uploader;
+    string[] servers;
+    protected override Task OnInitializedAsync()
+    {
+        input = new InputModel();
+        charNumberKnown = false;
+        people = new List<PersonModel> { new PersonModel(), new PersonModel()};
+        uploader = new UploadFileModel();
+        servers = new string[] { "AeriePeak", "Anvilmar", "Arathor", "Antonidas", "Azuremyst", "Baelgun", "BladesEdge", "Bladefist", "Bronzebeard", "Cenarius", "Darrowmere", "Draenor", "Dragonblight", "EchoIsles", "Galakrond", "Gnomeregan", "Hyjal", "Kilrogg", "Korialstrasz", "Lightbringer", "Misha", "Moonrunner", "Nordrassil", "Proudmoore", "Shadowsong", "Shu'Halo", "Silvermoon", "Skywall", "Suramar", "Uldum", "Uther", "Velen", "Windrunner", "Blackrock", "BlackwingLair", "Bonechewer", "Boulderfist", "Coilfang", "Crushridge", "Daggerspine", "DarkIron", "Destromath", "Dethecus", "Dragonmaw", "Dunemaul", "Frostwolf", "Gorgonnash", "Gurubashi", "Kalecgos", "Kil'Jaeden", "Lethon", "Maiev", "Nazjatar", "Ner'zhul", "Onyxia", "Rivendare", "ShatteredHalls", "Spinebreaker", "Spirestone", "Stonemaul", "Stormscale", "Tichondrius", "Ursin", "Vashj", "BlackwaterRaiders", "CenarionCircle", "Feathermoon", "Sentinels", "SilverHand", "TheScryers", "WyrmrestAccord", "TheVentureCo", "Kel'Thuzad", "Darkspear", "Deathwing", "Bloodscalp", "Nathrezim", "ShadowCouncil", "Aggramar", "Alexstrasza", "Alleria", "Blackhand", "BoreanTundra", "Cairne", "Dawnbringer", "Draka", "Eitrigg", "Fizzcrank", "Garona", "Ghostlands", "Greymane", "GrizzlyHills", "Hellscream", "Hydraxis", "Kael'thas", "KhazModan", "KulTiras", "Madoran", "Malfurion", "Malygos", "Mok'Nathal", "Muradin", "Nesingwary", "Quel'Dorei", "Ravencrest", "Rexxar", "Runetotem", "Sen'Jin", "Staghelm", "Terokkar", "Thunderhorn", "Vek'nilash", "Whisperwind", "Winterhoof", "Aegwynn", "Agamaggan", "Akama", "Archimonde", "Azgalor", "Azshara", "Balnazzar", "BloodFurnace", "BurningLegion", "Cho'gall", "Chromaggus", "Detheroc", "Drak'tharon", "Drak'thul", "Frostmane", "Garithos", "Gul'dan", "Hakkar", "Illidan", "Korgath", "LaughingSkull", "Mal'Ganis", "Malorne", "Mug'thol", "Stormreaver", "Sargeras", "TheUnderbog", "Thunderlord", "Wildhammer", "Farstriders", "KirinTor", "MoonGuard", "ScarletCrusade", "SistersofElune", "ThoriumBrotherhood", "EmeraldDream", "Lightninghoof", "Maelstrom", "TwistingNether", "Area52", "Arygos", "Bloodhoof", "Dalaran", "Drenden", "Durotan", "Duskwood", "Eldre'Thalas", "Elune", "Eonar", "Exodar", "Fenris", "Garrosh", "Gilneas", "GrizzlyHills", "Kargath", "Khadgar", "Llane", "Lothar", "Medivh", "Nazgrel", "Norgannon", "Shandris", "Stormrage", "Tanaris", "Thrall", "Trollbane", "Turalyon", "Uldaman", "Undermine", "Ysera", "Zul'jin", "AltarofStorms", "AlteracMountains", "Andorhal", "Anetheron", "Anub'arak", "Arthas", "Auchindoun", "BlackDragonflight", "BleedingHollow", "BurningBlade", "Dalvengyr", "DemonSoul", "Eredar", "Executus", "Firetree", "Gorefiend", "Haomarush", "Jaedenar", "Lightning'sBlade", "Mannoroth", "Magtheridon", "Scilla", "Shadowmoon", "ShatteredHand", "Skullcrusher", "Smolderthorn", "TheForgottenCoast", "Tortheldrin", "Warsong", "Ysondre", "Zuluhed", "ArgentDawn", "EarthenRing", "SteamwheedleCartel", "Aman'Thul", "Caelestrasz", "Dath'Remar", "Khaz'goroth", "Nagrand", "Saurfang", "Barthilas", "Dreadmaul", "Frostmourne", "Gundrak", "Jubei'Thos", "Thaurissan", "Quel'Thalas", "Drakkari", "Ragnaros", "Goldrinn", "Gallywix", "Azralon", "Nemesis", "TolBarad", "AeriePeak", "Aggramar", "Alonsus", "Anachronos", "Arathor", "Aszune", "Azjol-Nerub", "Azuremyst", "Blade'sEdge", "Bloodhoof", "Bronzebeard", "BronzeDragonflight", "ChamberofAspects", "Darkspear", "Doomhammer", "Draenor", "Dragonblight", "Eonar", "Ghostlands", "Hellfire", "Hellscream", "Khadgar", "Kilrogg", "KulTiras", "Lightbringer", "Nagrand", "Nordrassil", "Quel'Thalas", "Runetotem", "Saurfang", "Shadowsong", "Silvermoon", "Stormrage", "Terenas", "Terokkar", "Thunderhorn", "Turalyon", "Vek'nilash", "Wildhammer", "Agamaggan", "Al'Akir", "Ahn'Qiraj", "Auchindoun", "Balnazzar", "Bladefist", "Bloodfeather", "Bloodscalp", "Boulderfist", "BurningBlade", "BurningLegion", "BurningSteppes", "Chromaggus", "Crushridge", "Daggerspine", "Darksorrow", "Deathwing", "Dentarg", "Dragonmaw", "Drak'thul", "Dunemaul", "Emeriss", "Executus", "Frostmane", "Frostwhisper", "Genjuros", "GrimBatol", "Haomarush", "Hakkar", "Jaedenar", "Karazhan", "Kazzak", "Kor'gall", "LaughingSkull", "Lightning'sBlade", "Magtheridon", "Mazrigos", "Neptulon", "Outland", "Ragnaros", "Ravencrest", "ShatteredHalls", "ShatteredHand", "Skullcrusher", "Spinebreaker", "Stormreaver", "Stormscale", "Sunstrider", "Sylvanas", "Talnivarr", "TarrenMill", "TheMaelstrom", "Trollbane", "Twilight'sHammer", "TwistingNether", "Vashj", "Xavius", "Zenedar", "ArgentDawn", "DarkmoonFaire", "EarthenRing", "Moonglade", "SteamwheedleCartel", "TheSha'tar", "DefiasBrotherhood", "Ravenholdt", "ScarshieldLegion", "Sporeggar", "TheVentureCo", "Dalaran", "Drek'Thar", "Eitrigg", "Elune", "Hyjal", "KhazModan", "Krasus", "Medivh", "Suramar", "Uldaman", "Vol'jin", "Arak-arahm", "Arathi", "Archimonde", "Cho'gall", "Eldre'Thalas", "Garona", "Illidan", "Kael'Thas", "Naxxramas", "Ner'zhul", "Rashgarroth", "Sargeras", "Sinstralis", "Templenoir", "Throk'Feroth", "Varimathras", "Ysondre", "KirinTor", "LesClairvoyants", "LesSentinelles", "ConseildesOmbres", "CultedelaRiveNoire", "Alexstrasza", "Alleria", "Aman'Thul", "Ambossar", "Antonidas", "Area52", "Arygos", "Baelgun", "Blackhand", "DunMorogh", "Durotan", "Gilneas", "Kargath", "Khaz'goroth", "Lordaeron", "Lothar", "Madmortem", "Malfurion", "Malygos", "Nethersturm", "Norgannon", "Nozdormu", "Perenolde", "Proudmoore", "Rexxar", "Sen'jin", "Shattrath", "Teldrassil", "Thrall", "Tirion", "Ysera", "Aegwynn", "Anetheron", "Anub'arak", "Arthas", "Azshara", "Blackmoore", "Blackrock", "Blutkessel", "Dalvengyr", "Destromath", "Dethecus", "Echsenkessel", "Eredar", "Frostmourne", "Frostwolf", "Gorgonnash", "Gul'dan", "Kel'Thuzad", "Kil'Jaeden", "Krag'jin", "Mal'Ganis", "Mannoroth", "Mug'thol", "Nathrezim", "Nazjatar", "Nefarian", "Nera'thor", "Onyxia", "Rajaxx", "Taerar", "Terrordar", "DerMithrilorden", "DerRatvonDalaran", "DieAldor", "DieewigeWacht", "DieNachtwache", "DieSilberneHand", "Forscherlig", "Todeswache", "ZirkeldesCenarius", "Theradras", "Tichondrius", "Un'Goro", "Vek'lor", "Wrathbringer", "Zuluhed", "ColinasPardas", "Exodar", "LosErrantes", "Minahonda", "Tyrande", "C'Thun", "DunModr", "Sanguino", "Shen'dralar", "Uldum", "Zul'jin", "Nemesis" };
+
+        return base.OnInitializedAsync();
+    }
+
+    public void Download()
+    {
+        using (System.IO.StreamWriter file = new System.IO.StreamWriter("ParsedChatLog.txt", true))
+        {
+            foreach (string chatline in toBeWritten)
+            {
+                file.WriteLine(chatline);
+            }
+            file.Close();
+        }
+    }
+    public void GetLines(UploadedFileInfo uploadedFileInfo)
+    {
+        Debug.WriteLine("Uploaded file!");
+        //parse file into the list of strings
+        uploadLines = (System.IO.File.ReadAllLines(uploadedFileInfo.FullPath)).ToList<string>();
+        //then delete file so we don't get bloated
+        File.Delete(uploadedFileInfo.FullPath);
+
+    }
+    private void GetCharacters()
+    {
+        charNumberKnown = true;        
+
+    }
+    protected void Parse()
+    {
+
+        toBeWritten = new List<string>();
+
+        foreach (string line in uploadLines)
+        {
+            string result = OverallParse(line, people);
+            if (result != null)
+            {
+                toBeWritten.Add(result);
+            }
+        }
+
+        foreach (string chatline in toBeWritten)
+        {
+            Debug.WriteLine(chatline);
+            //  file.WriteLine(chatline);
+        }
+    }
+
+    public string OverallParse(string line, List<PersonModel> people)
+    {
+        if (line.Contains("receives loot") || line.Contains("receive loot"))
+        {
+            return null;
+        }
+
+        LineModel currentLine = new LineModel();
+        //check if the line contains the name of any present characters
+        foreach (PersonModel player in people)
+        {
+            if (line.Contains(player.InGame))
+            {
+                if (currentLine.speaker != null)
+                {
+                    int player1NameIndex = line.IndexOf(player.InGame);
+                    int player2NameIndex = line.IndexOf(currentLine.speaker.InGame);
+                    //the lower index is the actual speaker
+                    //we don't add the line to the currentline model because it would already be present
+                    if (player1NameIndex < player2NameIndex)
+                    {
+                        currentLine.target = currentLine.speaker;
+                        currentLine.speaker = player;
+                    }
+                    else
+                    {
+                        currentLine.target = player;
+                    }
+                }
+                else
+                {
+                    currentLine.speaker = player;
+                    currentLine.text = line;
+                }
+            }
+        }
+        //after this if we don't have a speaker for the line the line isn't useful
+        if (currentLine.speaker == null)
+        {
+            return null;
+        }
+        //check if it's ooc or a login
+        if (IsOOC(currentLine.text) || IsLogin(currentLine.text))
+        {
+            return null;
+        }
+        //remove timestamp
+        currentLine.text = ElimTimestamp(currentLine.text);
+        //remove server name
+        //replace names with display names
+        currentLine.text.Replace(currentLine.speaker.InGame, currentLine.speaker.Display);
+        //chop leading garbage
+        int substringIndex = (currentLine.text.IndexOf(currentLine.speaker.Display));
+        if (substringIndex > 0)
+        {
+            currentLine.text = currentLine.text.Substring(substringIndex);
+        }
+        //only replace other person's name if necessary
+        if (currentLine.target != null)
+        {
+            currentLine.text.Replace(currentLine.target.InGame, currentLine.target.Display);
+        }
+
+        //check if it's an emote --> if not, we're done!
+        if (!IsEmote(currentLine.text))
+        {
+            return currentLine.text;
+        }
+        else
+        {
+            //replace instances of "you" with player name in emotes
+            if (currentLine.text.StartsWith("You"))
+            {
+                currentLine.text.Replace("You", people.Where(x => x.IsPlayer).FirstOrDefault().Display);
+            }
+            //change personal emote tense
+            //return final line
+            return currentLine.text;
+        }
+
+
+    }
+
+
+    public bool IsLogin(string line)
+    {
+        if (line.Contains("OFFLINE") || line.Contains("ONLINE") || line.Contains("offline") || line.Contains("online") || line.Contains("is currently playing"))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public bool IsOOC(string line)
+    {
+        if (line.Contains('(') && line.Contains(')'))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public string ElimTimestamp(string input)
+    {
+        if (input.Length < 19)
+        {
+            String failedOutput = input;
+            return failedOutput;
+        }
+        string output = input.Substring(19);
+        Console.WriteLine(output);
+        return output;
+    }
+
+    public bool IsEmote(string input)
+    {
+        if (input.Contains(":"))
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
+
+    public string ParsePlayerEmote(string input, string name)
+    {
+        return input;
+    }
+}
+

@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30011.22
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WoWChatLogWebParser", "WoWChatLogWebParser.csproj", "{D240F67E-D608-4504-9133-C502250428AC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D240F67E-D608-4504-9133-C502250428AC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D240F67E-D608-4504-9133-C502250428AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D240F67E-D608-4504-9133-C502250428AC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D240F67E-D608-4504-9133-C502250428AC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {21B30D15-E5BD-43B2-BD6F-CFD44B46E09B}
+	EndGlobalSection
+EndGlobal
